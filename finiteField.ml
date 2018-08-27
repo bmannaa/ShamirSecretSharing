@@ -1,10 +1,17 @@
 module type FiniteFieldSig = sig
         type t
+        (* order of the finite field *)
         val order : int 
+
+        (* one-to-one mapping between integers [0..ord) to field elements *)
         val field_of_int : int -> t
         val int_of_field : t -> int
+        
+        (* additive and multiplicative identities *)
         val zero  : t
         val one   : t
+
+        (* field operations *)
         val (<+>) : t -> t -> t
         val (<->) : t -> t -> t
         val (<*>) : t -> t -> t
@@ -12,6 +19,9 @@ module type FiniteFieldSig = sig
         val inv   : t -> t option 
 end;;
 
+(* Galois field of 256 elements
+ * the operations are computed with respect to a log and antilog table
+ * populated with the generator 3 *)
 module GF256  = struct
         (* proper mod for integers *)
         let (%) a b = let remainder = a mod b in
@@ -57,7 +67,10 @@ module GF256  = struct
         (* subtraction operation *)
         let (<->) a b = a <+> b
 
-        (* Initialization of the log and antilog table for faster multiplication and division *)
+        (* Initialization of the log and antilog table for faster multiplication and division 
+         * using 3 as a generator 
+         * logTable table maps key a:t to value i:int such that a = 3 <^> i 
+         * antilogTable maps keys i:int to values a:t such that a = 3 <^> i *)
         module CharTable = Map.Make(Char)
         module IntTable = Map.Make(struct type t = int let compare = compare end)
         let logTable = ref CharTable.empty
@@ -85,6 +98,7 @@ module GF256  = struct
         let (<^>) a b = let i = CharTable.find a !logTable in
                         let k = (i * b) % 255 in
                         IntTable.find k !antilogTable
+
         (* inverse operation *)
         let inv a = if a = zero then None
                     else let i = CharTable.find a !logTable in
@@ -93,6 +107,9 @@ module GF256  = struct
 
 end;;
 
+(* Implementation of Galois field of 256 elements 
+ * This impelementation does not use log and antilog tables
+ * probably slightly slower. *)
 module GF256NI  = struct
         (* shift left for chars *)
         let (<<=) a n = let a' = (int_of_char a ) lsl n in
