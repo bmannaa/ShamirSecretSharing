@@ -53,16 +53,16 @@ module MakeSSS (Field : FiniteFieldSig) = struct
                                   []       -> []
                                 | (_,r)::_ -> let m = List.length r in
                                 let transpose (n, keys) ls = List.map2 (fun key l' -> (n,key)::l') keys ls in
-                                              let transposed = List.fold_right transpose l (List.init m (fun _->[])) in
-                                                    List.map reveal transposed
+                                let transposed = List.fold_right transpose l (List.init m (fun _->[])) in
+                                        List.map reveal transposed
         
         (* representation of integer in base-n
          * Input n:int a:int
          * output int List each in the range [0..n) *)
         let tobase n a = let euclid x y = (x/ y, x mod y) in 
                          let rec loop accum b = if b < n then b::accum else
-                                           let (q,r) = euclid b n in 
-                                           loop (r::accum) q
+                                                 let (q,r) = euclid b n in 
+                                                  loop (r::accum) q
                         in loop [] a
 
         (* produces an integer from its base-n representation
@@ -94,7 +94,7 @@ module MakeSSS (Field : FiniteFieldSig) = struct
                           let r = List.rev  (recoverList (List.map f l)) in 
                           let isnegative = int_of_field (List.hd r) == 1 in 
                           let m = frombase order (List.rev_map int_of_field (List.tl r)) in
-                          if isnegative then (-1 * m) else m
+                            if isnegative then (-1 * m) else m
                            
 
 end;;
